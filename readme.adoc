@@ -16,13 +16,12 @@ My app wil connect to the internet by having the ability to click on any of the 
 
 === 2.1 User Interface
 
-5. You must submit diagrams for all the different screens in your app (both portrait and landscape configurations),
-one diagram per screen. These diagrams must clearly show the layout of your app's screens, i.e., where images, menus, widgets, views, etc., appear. These can be hand drawn with a .png submitted of the drawing.
+image::img/views.jpg[Landscape/Portrait]
 
 == Section 3 – MVC Breakdown
 === 3.1 View
 
-create view on paper
+image::img/views.jpg
 
 === 3.2 Model
 
@@ -32,3 +31,4 @@ The database used will need a table for platforms, with columns such as level an
 
 === 3.3 Controller
 
+The controller will hold the platform platform information and send it to the view so that data is preserved upon rotation.
