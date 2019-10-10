@@ -21,7 +21,7 @@ image::img/views.jpg[Landscape/Portrait]
 == Section 3 – MVC Breakdown
 === 3.1 View
 
-image::img/views.jpg
+image::img/views.jpg[Views]
 
 === 3.2 Model
 
