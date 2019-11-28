@@ -1,4 +1,10 @@
 package com.example.project
 
-class PlatformGameApplication {
+import android.app.Application
+
+class PlatformGameApplication : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        UserRepository.initialize(this)
+    }
 }
