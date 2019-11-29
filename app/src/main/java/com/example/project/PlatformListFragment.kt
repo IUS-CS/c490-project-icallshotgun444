@@ -21,6 +21,8 @@ private const val TAG = "PlatformListFragment"
 class PlatformListFragment : Fragment() {
 
     private lateinit var repository: UserRepository
+    private lateinit var currentUser: User
+
 
     companion object {
         fun newInstance() = PlatformListFragment()
@@ -51,20 +53,25 @@ class PlatformListFragment : Fragment() {
 
         viewModel.user.observe(viewLifecycleOwner,
             Observer { user ->
-                if(user == null){
+                if (user == null) {
                     var user = User()
-                    user.platformLevels+=1
-                    user.platformLevels+=0
                     repository.insertUser(user)
                 }
-                else
-                updateUI(user)
+                currentUser = user
+                updateUI()
             }
         )
     }
 
-    private fun updateUI(user: User) {
-        adapter = PlatformAdapter(user.platformLevels)
+    private fun updateUI() {
+        var  platforms: List<Platform> = emptyList()
+        for((index,level) in currentUser.platformLevels.withIndex()){
+            val platform = Platform()
+            platform.index = index
+            platform.lvl = level
+            platforms += platform
+        }
+        adapter = PlatformAdapter(platforms);
         platformRecyclerView.adapter = adapter
     }
 
@@ -75,6 +82,7 @@ class PlatformListFragment : Fragment() {
     private inner class PlatformHolder(view: View) : ViewHolder(view), View.OnClickListener {
         override fun onClick(p0: View?) {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+
         }
 
 
@@ -82,41 +90,47 @@ class PlatformListFragment : Fragment() {
         private val platImageView: ImageView = itemView.findViewById(R.id.platform_image)
         private val timerTextView: TextView = itemView.findViewById(R.id.timer)
         private val levelTextView: TextView = itemView.findViewById(R.id.platform_level)
-        private val upgradeButton: Button = itemView.findViewById(R.id.level_up)
+        private val lvlUpButton: Button = itemView.findViewById(R.id.level_up)
 
 
         fun bind(platform: Platform) {
             this.platform = platform
-           // platImageView.setImageResource(R.drawable.(platform.name))
+            val draw = platform.name[platform.index]
+            val img = getResources().getIdentifier("com.example.project:drawable/$draw",null,null)
+            platImageView.setImageResource(img)
             timerTextView.text = platform.time.toString()
             levelTextView.text = "lvl ".plus(platform.lvl.toString())
-            upgradeButton.setOnClickListener{
-
+            lvlUpButton.setOnClickListener{
+                 /*   viewModel.user.observe(viewLifecycleOwner,
+                        Observer { user ->
+                            if(platform.lvl == 0 && user.platformLevels.size <9) {
+                                user.platformLevels.add(0)
+                            }
+                            user.platformLevels[platform.index]++
+                            repository.updateUser(user)
+                        }
+                    )*/
+                currentUser.platformLevels[platform.index]++
+                updateUI()
+                Log.d(TAG, "hit")
             }
 
         }
     }
-    private inner class PlatformAdapter(var platformlvls: List<Int>) : RecyclerView.Adapter<PlatformHolder>() {
+    private inner class PlatformAdapter(var platforms: List<Platform>) : RecyclerView.Adapter<PlatformHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PlatformHolder {
             val view = layoutInflater.inflate(R.layout.list_item_platform, parent, false)
             return PlatformHolder(view)
         }
 
 
-        override fun getItemCount(): Int = platformlvls.size
+        override fun getItemCount(): Int = platforms.size
 
         override fun onBindViewHolder(holder: PlatformHolder, position: Int) {
-            var  platforms: List<Platform> = emptyList()
-            for((index,level) in platformlvls.withIndex()){
-                val platform = Platform()
-                platform.index = index
-                platform.lvl = level
-                platforms += platform
-            }
             holder.bind(platforms[position])
         }
 
-    }
+    }//adapter class
 
     interface Callbacks {
 
@@ -127,6 +141,11 @@ class PlatformListFragment : Fragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         callbacks = context as Callbacks?
+    }
+
+    override fun onStop() {
+        super.onStop()
+            repository.updateUser(currentUser)
     }
 
     override fun onDetach() {
