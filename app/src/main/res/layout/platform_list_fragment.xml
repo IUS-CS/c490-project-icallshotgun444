@@ -10,25 +10,33 @@
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:orientation="horizontal"
-       app:layout_constraintStart_toStartOf="parent"
-       app:layout_constraintTop_toTopOf="parent"
+       app:layout_constraintBottom_toBottomOf="parent"
        app:layout_constraintEnd_toEndOf="parent">
-
+       <Button
+           android:id="@+id/sell_out_button"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginStart="16dp"
+           android:text="Sell Out"></Button>
        <LinearLayout
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
+           android:layout_marginStart="16dp"
            android:orientation="vertical"
            android:gravity="center">
        <TextView
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
+           android:textSize="18sp"
            android:text="Likes: "></TextView>
        <TextView
            android:id="@+id/like_count"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
+           android:textSize="16sp"
            android:text="0"></TextView>
    </LinearLayout>
+
        <LinearLayout
            android:layout_width="match_parent"
            android:layout_height="wrap_content"
@@ -37,15 +45,19 @@
            android:id="@+id/upgrades_button"
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
+           android:layout_marginEnd="32dp"
            android:text="Upgrades"></Button>
    </LinearLayout>
+
    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/platform_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lin_layout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/lin_layout"
         tools:context=".PlatformListFragment" />
 </androidx.constraintlayout.widget.ConstraintLayout>

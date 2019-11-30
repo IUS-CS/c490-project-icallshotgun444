@@ -24,15 +24,13 @@ class PlatformListFragment : Fragment() {
     private lateinit var currentUser: User
 
 
-    companion object {
-        fun newInstance() = PlatformListFragment()
-    }
-
     private val viewModel: PlatformListViewModel by lazy {
         ViewModelProviders.of(this).get(PlatformListViewModel::class.java)
     }
 
     private lateinit var platformRecyclerView: RecyclerView
+    private lateinit var sellOutButton: Button
+    private lateinit var likesText: TextView
     private var adapter: PlatformAdapter? = PlatformAdapter(emptyList())
 
     override fun onCreateView(
@@ -44,12 +42,22 @@ class PlatformListFragment : Fragment() {
 
         platformRecyclerView = view.findViewById(R.id.platform_recycler_view)
         platformRecyclerView.layoutManager = LinearLayoutManager(context)
+        likesText = view.findViewById(R.id.like_count)
+        sellOutButton = view.findViewById(R.id.sell_out_button)
 
         return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        sellOutButton.setOnClickListener{
+            currentUser.followers = currentUser.likes/50
+            currentUser.likes = 0
+            currentUser.platformLevels = mutableListOf(1,0)
+            repository.updateUser(currentUser)
+             updateUI()
+        }
 
         viewModel.user.observe(viewLifecycleOwner,
             Observer { user ->
@@ -61,9 +69,12 @@ class PlatformListFragment : Fragment() {
                 updateUI()
             }
         )
+
+
     }
 
     private fun updateUI() {
+        likesText.text = currentUser.likes.toString()
         var  platforms: List<Platform> = emptyList()
         for((index,level) in currentUser.platformLevels.withIndex()){
             val platform = Platform()
@@ -71,7 +82,7 @@ class PlatformListFragment : Fragment() {
             platform.lvl = level
             platforms += platform
         }
-        adapter = PlatformAdapter(platforms);
+        adapter = PlatformAdapter(platforms)
         platformRecyclerView.adapter = adapter
     }
 
@@ -101,18 +112,14 @@ class PlatformListFragment : Fragment() {
             timerTextView.text = platform.time.toString()
             levelTextView.text = "lvl ".plus(platform.lvl.toString())
             lvlUpButton.setOnClickListener{
-                 /*   viewModel.user.observe(viewLifecycleOwner,
-                        Observer { user ->
-                            if(platform.lvl == 0 && user.platformLevels.size <9) {
-                                user.platformLevels.add(0)
-                            }
-                            user.platformLevels[platform.index]++
-                            repository.updateUser(user)
-                        }
-                    )*/
+
+                if(platform.lvl == 0 && currentUser.platformLevels.size < platform.name.size){
+                    currentUser.platformLevels.add(0)
+                }
                 currentUser.platformLevels[platform.index]++
+                repository.updateUser(currentUser)
                 updateUI()
-                Log.d(TAG, "hit")
+                Log.d(TAG, "level up")
             }
 
         }
@@ -144,8 +151,9 @@ class PlatformListFragment : Fragment() {
     }
 
     override fun onStop() {
+        repository.updateUser(currentUser)
         super.onStop()
-            repository.updateUser(currentUser)
+
     }
 
     override fun onDetach() {
