@@ -62,10 +62,13 @@ class PlatformListFragment : Fragment() {
         viewModel.user.observe(viewLifecycleOwner,
             Observer { user ->
                 if (user == null) {
-                    var user = User()
-                    repository.insertUser(user)
+                    var newuser = User()
+                    repository.insertUser(newuser)
+                    currentUser = newuser
                 }
-                currentUser = user
+                else {
+                    currentUser = user
+                }
                 updateUI()
             }
         )
