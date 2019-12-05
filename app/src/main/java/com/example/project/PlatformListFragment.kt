@@ -84,6 +84,8 @@ class PlatformListFragment : Fragment() {
             val platform = Platform()
             platform.index = index
             platform.lvl = level
+            platform.time = ((index+1)*15000).toLong()
+            platform.generation = ((index+1)*(index+1))*level
             platforms += platform
         }
         adapter = PlatformAdapter(platforms)
@@ -93,6 +95,8 @@ class PlatformListFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
     }
+
+
 
     private inner class PlatformHolder(view: View) : ViewHolder(view), View.OnClickListener {
         override fun onClick(p0: View?) {
@@ -113,7 +117,6 @@ class PlatformListFragment : Fragment() {
             val draw = platform.name[platform.index]
             val img = getResources().getIdentifier("com.example.project:drawable/$draw",null,null)
             platImageView.setImageResource(img)
-            //timerTextView.text = platform.time.toString()
             levelTextView.text = "lvl ".plus(platform.lvl.toString())
             lvlUpButton.setOnClickListener{
 
@@ -125,13 +128,16 @@ class PlatformListFragment : Fragment() {
                 updateUI()
                 Log.d(TAG, "level up")
             }
-            if(platform.lvl > 0){
+            if(platform.lvl > 0 && platform.isFinished){
                 var setTimer = object : CountDownTimer(platform.time, 1000){
                     override fun onFinish() {
-                        Log.d(tag,"done")
+                        platform.isFinished = true
+                       currentUser.likes += platform.generation
+                        updateUI()
                     }
 
                     override fun onTick(p0: Long) {
+                        platform.isFinished = false
                         var timeRemaining = (p0/1000).toInt()
                         timerTextView.text = timeRemaining.toString()
                     }
