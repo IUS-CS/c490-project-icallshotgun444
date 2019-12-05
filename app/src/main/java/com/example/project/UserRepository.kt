@@ -28,7 +28,9 @@ class UserRepository private constructor(context: Context) {
         context.applicationContext,
         UserDatabase::class.java,
         DATABASE_NAME
-    ).build()
+    )
+        .fallbackToDestructiveMigration()
+        .build()
 
     private val userDao = database.userDao()
     private val executor = Executors.newSingleThreadExecutor()
