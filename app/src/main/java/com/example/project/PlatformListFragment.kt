@@ -3,6 +3,7 @@ package com.example.project
 import android.content.Context
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.text.format.DateFormat
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -112,7 +113,7 @@ class PlatformListFragment : Fragment() {
             val draw = platform.name[platform.index]
             val img = getResources().getIdentifier("com.example.project:drawable/$draw",null,null)
             platImageView.setImageResource(img)
-            timerTextView.text = platform.time.toString()
+            //timerTextView.text = platform.time.toString()
             levelTextView.text = "lvl ".plus(platform.lvl.toString())
             lvlUpButton.setOnClickListener{
 
@@ -124,6 +125,19 @@ class PlatformListFragment : Fragment() {
                 updateUI()
                 Log.d(TAG, "level up")
             }
+            if(platform.lvl > 0){
+                var setTimer = object : CountDownTimer(platform.time, 1000){
+                    override fun onFinish() {
+                        Log.d(tag,"done")
+                    }
+
+                    override fun onTick(p0: Long) {
+                        var timeRemaining = (p0/1000).toInt()
+                        timerTextView.text = timeRemaining.toString()
+                    }
+                }
+                platform.timer = setTimer.start()
+            }//active platform
 
         }
     }
