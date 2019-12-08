@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import kotlinx.android.synthetic.main.list_item_platform.*
 
 private const val TAG = "PlatformListFragment"
 
@@ -45,12 +46,15 @@ class PlatformListFragment : Fragment() {
         likesText = view.findViewById(R.id.like_count)
         sellOutButton = view.findViewById(R.id.sell_out_button)
         sellOutButton.setOnClickListener{
+            for(platform in platforms){
+                platform.timer.cancel()
+            }
             currentUser.followers = currentUser.likes/50
             currentUser.likes = 0
             currentUser.platformLevels = mutableListOf(1,0)
             platforms = emptyList()
-            platforms+=setPlatform(0,1)
-            platforms+=setPlatform(1,0)
+           // platforms+=setPlatform(0,1)
+           // platforms+=setPlatform(1,0)
             repository.updateUser(currentUser)
             updateUI()
         }
@@ -77,11 +81,30 @@ class PlatformListFragment : Fragment() {
         val platform = Platform()
         platform.index = index
         platform.lvl = level
-        if(index>0) platform.time = ((platform.index+1)*5000).toLong()
-        if(platform.index == 1){
+        if(platform.index == 0){
+            platform.time = ((platform.index+1)*5000).toLong()
             platform.generation = (((platform.index+1)*(platform.index+1))*platform.lvl)+currentUser.facebookLikeUpgrade
         }
         else  platform.generation = (((platform.index+1)*(platform.index+1))*platform.lvl)
+        if (platform.lvl>0) {
+            platform.time = ((platform.index+1)*5000).toLong()
+            var setTimer = object : CountDownTimer(platform.time, 1000) {
+                override fun onFinish() {
+                    currentUser.likes += platform.generation
+                    //likesText.text = currentUser.likes.toString()
+                    platform.timer.start()
+                }
+
+                override fun onTick(p0: Long) {
+                    platform.timeRemaining = (p0 / 1000).toInt()
+                    updateUI()
+                }
+            }
+            platform.timer = setTimer
+
+            platform.timer.start()
+        }
+        //active platform
         return platform
     }
 
@@ -118,8 +141,6 @@ class PlatformListFragment : Fragment() {
 
         }
 
-
-        private lateinit var platform: Platform
         private val platImageView: ImageView = itemView.findViewById(R.id.platform_image)
         private val timerTextView: TextView = itemView.findViewById(R.id.timer)
         private val levelTextView: TextView = itemView.findViewById(R.id.platform_level)
@@ -127,43 +148,50 @@ class PlatformListFragment : Fragment() {
 
 
         fun bind(platform: Platform) {
-            this.platform = platform
+
             val draw = platform.name[platform.index]
             val img = getResources().getIdentifier("com.example.project:drawable/$draw",null,null)
             platImageView.setImageResource(img)
             levelTextView.text = "lvl ".plus(platform.lvl.toString())
+            timerTextView.text = platform.timeRemaining.toString()
             lvlUpButton.setOnClickListener{
+                if(currentUser.likes>= ((platform.index+1)*10)+(platform.lvl*5)) {
+                    currentUser.likes -= ((platform.index+1)*10)+(platform.lvl*5)
+                    if (platform.lvl == 0) {
+                        if (currentUser.platformLevels.size < platform.name.size) {
+                            currentUser.platformLevels.add(0)
+                            platforms += setPlatform(platforms.size, 0)
+                        }
+                        platform.time = ((platform.index + 1) * 5000).toLong()
+                        var setTimer = object : CountDownTimer(platform.time, 1000) {
+                            override fun onFinish() {
+                                currentUser.likes += platform.generation
+                                platform.timer.start()
+                            }
 
-                if(platform.lvl == 0 && currentUser.platformLevels.size < platform.name.size){
-                    platform.time = ((platform.index+1)*5000).toLong()
-                    currentUser.platformLevels.add(0)
-                    platforms+=setPlatform(platforms.size,0)
-                }
-                platform.time = ((platform.index+1)*5000).toLong()
-                currentUser.platformLevels[platform.index]++
-                platform.lvl++
-                levelTextView.text = "lvl ".plus(platform.lvl.toString())
-                platform.generation = ((platform.index+1)*(platform.index+1))*platform.lvl
-                repository.updateUser(currentUser)
-                Log.d(TAG, "level up")
-            }
-            if(platform.isFinished){
-                platform.isFinished = false
-                var setTimer = object : CountDownTimer(platform.time, 1000){
-                    override fun onFinish() {
-                        platform.isFinished = true
-                       currentUser.likes += platform.generation
-                        likesText.text = currentUser.likes.toString()
+                            override fun onTick(p0: Long) {
+                                platform.timeRemaining = (p0 / 1000).toInt()
+                                updateUI()
+                            }
+                        }
+                        platform.timer = setTimer
                         platform.timer.start()
                     }
-
-                    override fun onTick(p0: Long) {
-                        var timeRemaining = (p0/1000).toInt()
-                        timerTextView.text = timeRemaining.toString()
-                    }
+                    currentUser.platformLevels[platform.index]++
+                    platform.lvl++
+                    levelTextView.text = "lvl ".plus(platform.lvl.toString())
+                    platform.generation =
+                        ((platform.index + 1) * (platform.index + 1)) * platform.lvl
+                    repository.updateUser(currentUser)
+                    updateUI()
+                    Log.d(TAG, "level up")
+                }//likes sufficient
+                else{
+                    var cost = ((platform.index+1)*10)+(platform.lvl*5)
+                    Toast.makeText(context, "Cost to level up is $cost likes",Toast.LENGTH_LONG).show()
                 }
-                platform.timer = setTimer.start()
-            }//active platform
+            }
+
 
         }
     }
@@ -200,7 +228,13 @@ class PlatformListFragment : Fragment() {
     }
 
     override fun onDetach() {
+        repository.updateUser(currentUser)
         super.onDetach()
         callbacks = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        repository.updateUser(currentUser)
     }
 }

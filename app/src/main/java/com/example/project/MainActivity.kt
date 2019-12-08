@@ -24,7 +24,6 @@ class MainActivity : AppCompatActivity(), PlatformListFragment.Callbacks {
              }
 
              override fun onAdLoaded() {
-                 Toast.makeText(applicationContext,"Loaded ad",Toast.LENGTH_LONG).show()
              }
          }
 
