@@ -8,5 +8,6 @@ import java.util.*
 data class User(@PrimaryKey var id: UUID = UUID.randomUUID(),
                  var likes: Int = 0,
                 var followers: Int = 0,
-                var platformLevels: MutableList<Int> = mutableListOf(1,0)
+                var platformLevels: MutableList<Int> = mutableListOf(1,0),
+                var facebookLikeUpgrade: Int = 0
 )

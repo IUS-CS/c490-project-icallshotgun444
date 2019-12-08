@@ -38,5 +38,13 @@ class MainActivity : AppCompatActivity(), PlatformListFragment.Callbacks {
         }
     }//on create
 
+    override fun onUpgrade() {
+        val fragment = UpgradeFragment.newInstance()
+        supportFragmentManager
+            .beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
 
 }
